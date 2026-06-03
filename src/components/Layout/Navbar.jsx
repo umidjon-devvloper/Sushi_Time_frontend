@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useCartStore, selectTotalItems } from "../../store/cartStore";
@@ -11,6 +11,18 @@ const LANGS = [
   { code: "tr", flag: "🇹🇷" },
 ];
 
+function useIsMobile(breakpoint = 768) {
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== "undefined" ? window.innerWidth < breakpoint : false
+  );
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < breakpoint);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, [breakpoint]);
+  return isMobile;
+}
+
 export default function Navbar() {
   const { t } = useTranslation();
   const location = useLocation();
@@ -18,6 +30,7 @@ export default function Navbar() {
   const { isLoggedIn } = useProfileStore();
   const [langOpen, setLangOpen] = useState(false);
   const currentLang = i18n.language || "en";
+  const isMobile = useIsMobile();
 
   const navLinks = [
     { to: "/", label: t("home") },
@@ -27,27 +40,33 @@ export default function Navbar() {
 
   return (
     <nav style={styles.nav}>
-      <div style={styles.inner}>
+      <div style={{ ...styles.inner, ...(isMobile ? styles.innerMobile : {}) }}>
         {/* Logo */}
         <Link to="/" style={styles.logo}>
-          <img src="/image.png" style={{ width: "150px", height: "150px" }} />
+          <img
+            src="/image.png"
+            alt="Sushi Time"
+            style={isMobile ? styles.logoImgMobile : styles.logoImg}
+          />
         </Link>
 
-        {/* Desktop links */}
-        <div style={styles.links}>
-          {navLinks.map((l) => (
-            <Link
-              key={l.to}
-              to={l.to}
-              style={{
-                ...styles.link,
-                ...(location.pathname === l.to ? styles.linkActive : {}),
-              }}
-            >
-              {l.label}
-            </Link>
-          ))}
-        </div>
+        {/* Desktop links — hidden on mobile (BottomNav covers navigation) */}
+        {!isMobile && (
+          <div style={styles.links}>
+            {navLinks.map((l) => (
+              <Link
+                key={l.to}
+                to={l.to}
+                style={{
+                  ...styles.link,
+                  ...(location.pathname === l.to ? styles.linkActive : {}),
+                }}
+              >
+                {l.label}
+              </Link>
+            ))}
+          </div>
+        )}
 
         {/* Right actions */}
         <div style={styles.actions}>
@@ -81,16 +100,24 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Cart */}
-          <Link to="/cart" style={{ ...styles.iconBtn, position: "relative" }}>
-            🛒
-            {totalItems > 0 && <span style={styles.badge}>{totalItems}</span>}
-          </Link>
+          {/* Cart & Profile — hidden on mobile (BottomNav covers them) */}
+          {!isMobile && (
+            <>
+              <Link
+                to="/cart"
+                style={{ ...styles.iconBtn, position: "relative" }}
+              >
+                🛒
+                {totalItems > 0 && (
+                  <span style={styles.badge}>{totalItems}</span>
+                )}
+              </Link>
 
-          {/* Profile */}
-          <Link to="/profile" style={styles.profileBtn}>
-            {isLoggedIn ? "👤" : "🔑"}
-          </Link>
+              <Link to="/profile" style={styles.profileBtn}>
+                {isLoggedIn ? "👤" : "🔑"}
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </nav>
@@ -117,12 +144,26 @@ const styles = {
     justifyContent: "space-between",
     gap: 24,
   },
+  innerMobile: {
+    padding: "0 16px",
+    gap: 12,
+  },
   logo: {
     display: "flex",
     alignItems: "center",
     gap: 8,
     textDecoration: "none",
     flexShrink: 0,
+  },
+  logoImg: {
+    height: 170,
+    width: "auto",
+    objectFit: "contain",
+  },
+  logoImgMobile: {
+    height: 110,
+    width: "auto",
+    objectFit: "contain",
   },
   logoIcon: { fontSize: 24 },
   logoText: {
