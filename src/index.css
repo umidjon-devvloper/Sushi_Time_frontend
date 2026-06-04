@@ -145,6 +145,22 @@ img {
   padding: 10px;
   transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
+/* Fallback for older iOS Safari (< 15) that doesn't support aspect-ratio:
+   reserve a square via a padding-top spacer and fill it with absolute children,
+   so product images/placeholders don't collapse to zero height. */
+@supports not (aspect-ratio: 1 / 1) {
+  .sushi-card__img-wrap {
+    height: 0;
+    padding-top: 100%;
+  }
+  .sushi-card__img-wrap > * {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
 .sushi-card__add {
   width: 44px;
   height: 44px;
