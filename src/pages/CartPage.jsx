@@ -3,10 +3,12 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useCartStore, selectTotalPrice } from '../store/cartStore';
 import { FREE_DELIVERY_THRESHOLD, DELIVERY_FEE, SERVICE_FEE } from '../theme';
+import useIsMobile from '../hooks/useIsMobile';
 
 export default function CartPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const { items, updateQuantity, removeFromCart, clearCart } = useCartStore();
   const subtotal = useCartStore(selectTotalPrice);
   const deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
@@ -32,11 +34,11 @@ export default function CartPage() {
           <button style={styles.clearBtn} onClick={clearCart}>{t('clear')}</button>
         </div>
 
-        <div style={styles.layout}>
+        <div style={{ ...styles.layout, ...(isMobile ? styles.layoutMobile : {}) }}>
           {/* Items list */}
           <div style={styles.itemsList}>
             {items.map(({ menuItem, quantity }) => (
-              <div key={menuItem._id} style={styles.item}>
+              <div key={menuItem._id} style={{ ...styles.item, ...(isMobile ? styles.itemMobile : {}) }}>
                 <div style={styles.itemImg}>
                   {menuItem.imageUrl
                     ? <img src={menuItem.imageUrl} alt={menuItem.name} style={styles.img} />
@@ -47,7 +49,7 @@ export default function CartPage() {
                   <div style={styles.itemName}>{menuItem.name}</div>
                   <div style={styles.itemPrice}>{menuItem.price} ₺ each</div>
                 </div>
-                <div style={styles.itemRight}>
+                <div style={{ ...styles.itemRight, ...(isMobile ? styles.itemRightMobile : {}) }}>
                   <div style={styles.qtyControl}>
                     <button style={styles.qtyBtn} onClick={() => updateQuantity(menuItem._id, quantity - 1)}>−</button>
                     <span style={styles.qtyVal}>{quantity}</span>
@@ -109,12 +111,15 @@ const styles = {
   title: { fontSize: 28, fontWeight: 900, color: 'var(--text-primary)' },
   clearBtn: { fontSize: 13, fontWeight: 600, color: 'var(--error)', background: 'none', border: 'none', cursor: 'pointer' },
   layout: { display: 'grid', gridTemplateColumns: '1fr 360px', gap: 24, alignItems: 'start' },
+  layoutMobile: { gridTemplateColumns: '1fr' },
   itemsList: { display: 'flex', flexDirection: 'column', gap: 12 },
   item: {
     display: 'flex', alignItems: 'center', gap: 16,
     background: '#fff', borderRadius: 'var(--radius-lg)', padding: '16px',
     boxShadow: 'var(--shadow-sm)',
   },
+  itemMobile: { flexWrap: 'wrap' },
+  itemRightMobile: { width: '100%', justifyContent: 'space-between', marginTop: 4 },
   itemImg: { width: 72, height: 72, borderRadius: 'var(--radius-md)', overflow: 'hidden', flexShrink: 0 },
   img: { width: '100%', height: '100%', objectFit: 'cover' },
   itemInfo: { flex: 1, minWidth: 0 },

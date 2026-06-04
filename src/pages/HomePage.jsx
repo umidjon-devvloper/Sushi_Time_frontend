@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useMenuStore } from '../store/menuStore';
 import PromoCarousel from '../components/PromoCarousel';
 import SushiCard from '../components/SushiCard';
+import useIsMobile from '../hooks/useIsMobile';
 
 const CATEGORY_KEYS = {
   rolls: 'cat_rolls', nigiri: 'cat_nigiri', sashimi: 'cat_sashimi',
@@ -36,8 +37,10 @@ export default function HomePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { items, loading, loadMenu } = useMenuStore();
+  const isMobile = useIsMobile();
   const [search, setSearch] = useState('');
   const [activeCat, setActiveCat] = useState(null);
+  const gridStyle = { ...styles.grid, ...(isMobile ? styles.gridMobile : {}) };
 
   const sectionRefs = useRef({});
   const chipRefs = useRef({});
@@ -178,7 +181,7 @@ export default function HomePage() {
 
       <div style={styles.container}>
         {loading ? (
-          <div style={styles.grid}>
+          <div style={gridStyle}>
             {[...Array(6)].map((_, i) => (
               <div key={i} className="skeleton" style={{ height: 280, borderRadius: 20 }} />
             ))}
@@ -191,7 +194,7 @@ export default function HomePage() {
               style={styles.section}
             >
               <h2 style={styles.sectionTitle}>{t(CATEGORY_KEYS[cat] || cat)}</h2>
-              <div style={styles.grid}>
+              <div style={gridStyle}>
                 {list.map((item) => (
                   <SushiCard key={item._id} item={item} />
                 ))}
@@ -278,6 +281,7 @@ const styles = {
   section: { display: 'flex', flexDirection: 'column', gap: 14, scrollMarginTop: 140 },
   sectionTitle: { fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: -0.3 },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 20 },
+  gridMobile: { gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 },
   empty: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '48px 0' },
   emptyText: { fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' },
   emptySubtext: { fontSize: 14, color: 'var(--text-secondary)' },

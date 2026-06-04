@@ -3,11 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import httpClient from '../api/httpClient';
 import { useCartStore } from '../store/cartStore';
+import useIsMobile from '../hooks/useIsMobile';
 
 export default function ItemDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const isMobile = useIsMobile();
   const addToCart = useCartStore((s) => s.addToCart);
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -50,7 +52,7 @@ export default function ItemDetailPage() {
           ← {t('menu')}
         </button>
 
-        <div style={styles.layout}>
+        <div style={{ ...styles.layout, ...(isMobile ? styles.layoutMobile : {}) }}>
           {/* Image */}
           <div style={styles.imgWrap}>
             {item.imageUrl ? (
@@ -135,6 +137,7 @@ const styles = {
   container: { maxWidth: 1000, margin: '0 auto', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 20 },
   backBtn: { alignSelf: 'flex-start', fontSize: 14, fontWeight: 600, color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 },
   layout: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32, alignItems: 'start' },
+  layoutMobile: { gridTemplateColumns: '1fr', gap: 20 },
   imgWrap: { position: 'relative', borderRadius: 'var(--radius-xl)', overflow: 'hidden', aspectRatio: '1/1' },
   img: { width: '100%', height: '100%', objectFit: 'cover' },
   unavail: {

@@ -6,10 +6,12 @@ import { useOrderStore } from '../store/orderStore';
 import { useProfileStore } from '../store/profileStore';
 import httpClient from '../api/httpClient';
 import { FREE_DELIVERY_THRESHOLD, DELIVERY_FEE, SERVICE_FEE, TIP_OPTIONS } from '../theme';
+import useIsMobile from '../hooks/useIsMobile';
 
 export default function CheckoutPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const { items, clearCart } = useCartStore();
   const subtotal = useCartStore(selectTotalPrice);
   const { placeOrder, loading } = useOrderStore();
@@ -93,7 +95,7 @@ export default function CheckoutPage() {
         <button style={styles.backBtn} onClick={() => navigate(-1)}>← {t('cart')}</button>
         <h1 style={styles.title}>{t('checkout')}</h1>
 
-        <div style={styles.layout}>
+        <div style={{ ...styles.layout, ...(isMobile ? styles.layoutMobile : {}) }}>
           <div style={styles.left}>
             {/* Your details */}
             <div style={styles.section}>
@@ -229,6 +231,7 @@ const styles = {
   backBtn: { alignSelf: 'flex-start', fontSize: 14, fontWeight: 600, color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 },
   title: { fontSize: 28, fontWeight: 900, color: 'var(--text-primary)' },
   layout: { display: 'grid', gridTemplateColumns: '1fr 360px', gap: 24, alignItems: 'start' },
+  layoutMobile: { gridTemplateColumns: '1fr' },
   left: { display: 'flex', flexDirection: 'column', gap: 16 },
   section: { background: '#fff', borderRadius: 'var(--radius-xl)', padding: '20px', display: 'flex', flexDirection: 'column', gap: 12, boxShadow: 'var(--shadow-sm)' },
   sectionTitle: { fontSize: 16, fontWeight: 800, color: 'var(--text-primary)' },
