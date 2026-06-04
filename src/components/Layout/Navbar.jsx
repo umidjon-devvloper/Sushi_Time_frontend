@@ -156,12 +156,12 @@ const styles = {
     flexShrink: 0,
   },
   logoImg: {
-    height: 56,
+    height: 170,
     width: "auto",
     objectFit: "contain",
   },
   logoImgMobile: {
-    height: 44,
+    height: 110,
     width: "auto",
     objectFit: "contain",
   },
