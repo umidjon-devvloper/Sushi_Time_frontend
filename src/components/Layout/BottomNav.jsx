@@ -1,18 +1,15 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useCartStore, selectTotalItems } from '../../store/cartStore';
 
 export default function BottomNav() {
   const { t } = useTranslation();
-  const totalItems = useCartStore(selectTotalItems);
 
   const tabs = [
     { to: '/', icon: '🏠', label: t('home') },
     { to: '/menu', icon: '🍽️', label: t('menu') },
-    { to: '/cart', icon: '🛒', label: t('cart'), badge: totalItems },
     { to: '/orders', icon: '📋', label: t('orders') },
-    { to: '/profile', icon: '👤', label: t('profile') },
+    { to: '/profile', icon: '👤', label: t('account') },
   ];
 
   return (
@@ -46,7 +43,8 @@ const styles = {
     bottom: 0,
     left: 0,
     right: 0,
-    height: 'var(--bottom-nav-height)',
+    height: 'calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px))',
+    paddingBottom: 'env(safe-area-inset-bottom, 0px)',
     background: '#fff',
     borderTop: '1px solid var(--divider)',
     display: 'flex',

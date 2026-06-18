@@ -5,18 +5,23 @@ export const useCartStore = create(
   persist(
     (set, get) => ({
       items: [],
+      // Transient signal consumed by the floating cart prompt. Not persisted.
+      justAdded: null,
 
       addToCart: (menuItem) => {
         set((state) => {
           const idx = state.items.findIndex((i) => i.menuItem._id === menuItem._id);
+          const justAdded = { item: menuItem, at: Date.now() };
           if (idx >= 0) {
             const updated = [...state.items];
             updated[idx] = { ...updated[idx], quantity: updated[idx].quantity + 1 };
-            return { items: updated };
+            return { items: updated, justAdded };
           }
-          return { items: [...state.items, { menuItem, quantity: 1 }] };
+          return { items: [...state.items, { menuItem, quantity: 1 }], justAdded };
         });
       },
+
+      clearJustAdded: () => set({ justAdded: null }),
 
       removeFromCart: (itemId) => {
         set((state) => ({
@@ -41,6 +46,7 @@ export const useCartStore = create(
     {
       name: 'sushi_time_cart',
       storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({ items: state.items }),
     }
   )
 );

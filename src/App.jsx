@@ -14,6 +14,7 @@ import ProfilePage from './pages/ProfilePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ChatWidget from './components/ChatWidget';
+import CartBar from './components/CartBar';
 
 export default function App() {
   return (
@@ -36,6 +37,7 @@ export default function App() {
             <Route path="*" element={<HomePage />} />
           </Routes>
         </main>
+        <CartBar />
         <ChatWidget />
         {/* Bottom nav only on mobile */}
         <MobileOnly>

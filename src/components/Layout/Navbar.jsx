@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useCartStore, selectTotalItems } from "../../store/cartStore";
-import { useProfileStore } from "../../store/profileStore";
 import i18n from "../../i18n/index.js";
 
+// Real flag images (flagcdn) — emoji flags render as plain letters ("GB") on
+// Windows/Chrome, so we use proper flag artwork for a consistent premium look.
 const LANGS = [
-  { code: "en", flag: "🇬🇧" },
-  { code: "ru", flag: "🇷🇺" },
-  { code: "tr", flag: "🇹🇷" },
+  { code: "en", cc: "gb", label: "EN" },
+  { code: "ru", cc: "ru", label: "RU" },
+  { code: "tr", cc: "tr", label: "TR" },
 ];
 
 function useIsMobile(breakpoint = 768) {
@@ -26,9 +26,6 @@ function useIsMobile(breakpoint = 768) {
 export default function Navbar() {
   const { t } = useTranslation();
   const location = useLocation();
-  const totalItems = useCartStore(selectTotalItems);
-  const { isLoggedIn } = useProfileStore();
-  const [langOpen, setLangOpen] = useState(false);
   const currentLang = i18n.language || "en";
   const isMobile = useIsMobile();
 
@@ -36,7 +33,37 @@ export default function Navbar() {
     { to: "/", label: t("home") },
     { to: "/menu", label: t("menu") },
     { to: "/orders", label: t("orders") },
+    { to: "/profile", label: t("account") },
   ];
+
+  const flags = (
+    <div style={styles.flags}>
+      {LANGS.map((l) => {
+        const active = l.code === currentLang;
+        return (
+          <button
+            key={l.code}
+            onClick={() => i18n.changeLanguage(l.code)}
+            title={l.label}
+            aria-label={l.label}
+            style={{
+              ...styles.flagBtn,
+              ...(active ? styles.flagBtnActive : {}),
+            }}
+          >
+            <img
+              src={`https://flagcdn.com/w40/${l.cc}.png`}
+              srcSet={`https://flagcdn.com/w80/${l.cc}.png 2x`}
+              width={28}
+              height={20}
+              alt={l.label}
+              style={styles.flagImg}
+            />
+          </button>
+        );
+      })}
+    </div>
+  );
 
   return (
     <nav style={styles.nav}>
@@ -68,57 +95,8 @@ export default function Navbar() {
           </div>
         )}
 
-        {/* Right actions */}
-        <div style={styles.actions}>
-          {/* Language picker */}
-          <div style={{ position: "relative" }}>
-            <button
-              style={styles.iconBtn}
-              onClick={() => setLangOpen((v) => !v)}
-              title="Language"
-            >
-              {LANGS.find((l) => l.code === currentLang)?.flag || "🌐"}
-            </button>
-            {langOpen && (
-              <div style={styles.langDropdown}>
-                {LANGS.map((l) => (
-                  <button
-                    key={l.code}
-                    style={{
-                      ...styles.langItem,
-                      ...(l.code === currentLang ? styles.langItemActive : {}),
-                    }}
-                    onClick={() => {
-                      i18n.changeLanguage(l.code);
-                      setLangOpen(false);
-                    }}
-                  >
-                    {l.flag} {l.code.toUpperCase()}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Cart & Profile — hidden on mobile (BottomNav covers them) */}
-          {!isMobile && (
-            <>
-              <Link
-                to="/cart"
-                style={{ ...styles.iconBtn, position: "relative" }}
-              >
-                🛒
-                {totalItems > 0 && (
-                  <span style={styles.badge}>{totalItems}</span>
-                )}
-              </Link>
-
-              <Link to="/profile" style={styles.profileBtn}>
-                {isLoggedIn ? "👤" : "🔑"}
-              </Link>
-            </>
-          )}
-        </div>
+        {/* Right actions — language flags only */}
+        <div style={styles.actions}>{flags}</div>
       </div>
     </nav>
   );
@@ -129,13 +107,18 @@ const styles = {
     position: "sticky",
     top: 0,
     zIndex: 100,
-    background: "#fff",
+    background: "rgba(255,255,255,0.92)",
+    backdropFilter: "saturate(180%) blur(12px)",
+    WebkitBackdropFilter: "saturate(180%) blur(12px)",
     borderBottom: "1px solid var(--divider)",
     boxShadow: "var(--shadow-sm)",
     height: "var(--navbar-height)",
   },
   inner: {
+    // Match the page containers exactly (maxWidth 100% + same clamp padding)
+    // so the navbar's left/right edges line up with the main content.
     maxWidth: "100%",
+    width: "100%",
     margin: "0 auto",
     padding: "0 clamp(16px, 3vw, 40px)",
     height: "100%",
@@ -156,7 +139,7 @@ const styles = {
     flexShrink: 0,
   },
   logoImg: {
-    height: 170,
+    height: 130,
     width: "auto",
     objectFit: "contain",
   },
@@ -165,23 +148,17 @@ const styles = {
     width: "auto",
     objectFit: "contain",
   },
-  logoIcon: { fontSize: 24 },
-  logoText: {
-    fontSize: 20,
-    fontWeight: 800,
-    color: "var(--primary)",
-    letterSpacing: -0.5,
-  },
   links: {
     display: "flex",
     alignItems: "center",
     gap: 4,
     flex: 1,
+    justifyContent: "center",
   },
   link: {
-    padding: "6px 14px",
+    padding: "8px 18px",
     borderRadius: "var(--radius-full)",
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: 600,
     color: "var(--text-secondary)",
     textDecoration: "none",
@@ -192,73 +169,36 @@ const styles = {
     color: "var(--primary)",
   },
   actions: { display: "flex", alignItems: "center", gap: 8 },
-  iconBtn: {
+  flags: {
     display: "flex",
     alignItems: "center",
-    justifyContent: "center",
-    width: 40,
-    height: 40,
-    borderRadius: "var(--radius-full)",
+    gap: 6,
     background: "var(--background)",
-    border: "none",
-    fontSize: 18,
+    padding: 4,
+    borderRadius: "var(--radius-full)",
+  },
+  flagBtn: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 3,
+    borderRadius: "var(--radius-full)",
+    background: "transparent",
+    border: "2px solid transparent",
     cursor: "pointer",
-    position: "relative",
-    textDecoration: "none",
+    transition: "transform 0.12s, border-color 0.15s",
+    lineHeight: 0,
   },
-  badge: {
-    position: "absolute",
-    top: -4,
-    right: -4,
-    background: "var(--primary)",
-    color: "#fff",
-    fontSize: 10,
-    fontWeight: 800,
-    borderRadius: "var(--radius-full)",
-    minWidth: 18,
-    height: 18,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "0 4px",
-  },
-  profileBtn: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: 40,
-    height: 40,
-    borderRadius: "var(--radius-full)",
-    background: "var(--primary-light)",
-    fontSize: 18,
-    textDecoration: "none",
-  },
-  langDropdown: {
-    position: "absolute",
-    top: 44,
-    right: 0,
+  flagBtnActive: {
+    border: "2px solid var(--primary)",
     background: "#fff",
-    borderRadius: "var(--radius-md)",
-    boxShadow: "var(--shadow-lg)",
-    border: "1px solid var(--divider)",
-    overflow: "hidden",
-    zIndex: 200,
-    minWidth: 100,
+    transform: "scale(1.05)",
   },
-  langItem: {
+  flagImg: {
+    width: 28,
+    height: 20,
+    objectFit: "cover",
+    borderRadius: 4,
     display: "block",
-    width: "100%",
-    padding: "8px 16px",
-    fontSize: 13,
-    fontWeight: 600,
-    textAlign: "left",
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    color: "var(--text-primary)",
-  },
-  langItemActive: {
-    background: "var(--primary-light)",
-    color: "var(--primary)",
   },
 };

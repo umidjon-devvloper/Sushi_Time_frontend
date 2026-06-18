@@ -24,7 +24,7 @@
   --shadow-lg: 0 6px 14px rgba(0,0,0,0.13);
   --shadow-glow: 0 4px 12px rgba(232,24,27,0.35);
 
-  --navbar-height: 64px;
+  --navbar-height: 76px;
   --bottom-nav-height: 64px;
 }
 
@@ -39,6 +39,11 @@ html, body {
   background-color: var(--background);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* Avoid grey flash on tap for a native app feel */
+  -webkit-tap-highlight-color: transparent;
 }
 
 #root {
@@ -195,4 +200,36 @@ img {
 .sushi-card__add--disabled:hover {
   transform: none;
   background: var(--divider);
+}
+
+/* ---------------------------------------------------------------------------
+   Responsive polish — tuned so the layout feels premium on every phone size.
+   --------------------------------------------------------------------------- */
+
+/* Standard phones */
+@media (max-width: 768px) {
+  :root {
+    --navbar-height: 64px;
+    --bottom-nav-height: 62px;
+  }
+  .sushi-card { border-radius: var(--radius-md); }
+  .sushi-card:hover { transform: none; }
+  .sushi-card:hover .sushi-card__img { transform: none; }
+}
+
+/* Small phones (iPhone SE / older Android) */
+@media (max-width: 380px) {
+  .sushi-card__add {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
 }

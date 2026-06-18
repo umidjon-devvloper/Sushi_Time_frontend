@@ -46,6 +46,7 @@ const en = {
   chat_support: 'Support Chat', chat_online: 'Online', chat_offline: 'Offline',
   chat_placeholder: 'Type a message...', chat_empty_title: 'How can we help?',
   chat_empty_sub: 'Send us a message and we will reply soon.', loading: 'Loading...',
+  account: 'Account', added_to_cart: 'Added to cart', go_to_cart: 'Go to cart',
 };
 
 const ru = {
@@ -92,6 +93,7 @@ const ru = {
   chat_support: 'Чат поддержки', chat_online: 'Онлайн', chat_offline: 'Не в сети',
   chat_placeholder: 'Напишите сообщение...', chat_empty_title: 'Чем можем помочь?',
   chat_empty_sub: 'Напишите нам и мы скоро ответим.', loading: 'Загрузка...',
+  account: 'Аккаунт', added_to_cart: 'Добавлено в корзину', go_to_cart: 'Перейти в корзину',
 };
 
 const tr = {
@@ -138,6 +140,7 @@ const tr = {
   chat_support: 'Destek Sohbeti', chat_online: 'Çevrimiçi', chat_offline: 'Çevrimdışı',
   chat_placeholder: 'Mesaj yazın...', chat_empty_title: 'Nasıl yardımcı olabiliriz?',
   chat_empty_sub: 'Bize mesaj gönderin, en kısa sürede yanıtlayacağız.', loading: 'Yükleniyor...',
+  account: 'Hesap', added_to_cart: 'Sepete eklendi', go_to_cart: 'Sepete git',
 };
 
 const savedLang = localStorage.getItem('sushi_lang') || 'en';

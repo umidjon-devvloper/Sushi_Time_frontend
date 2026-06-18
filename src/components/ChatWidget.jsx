@@ -1,14 +1,24 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useChatStore } from '../store/chatStore';
 import { useProfileStore } from '../store/profileStore';
 import { requestNotificationPermission, unlockAudio } from '../utils/notify';
 
+function useIsMobile(breakpoint = 600) {
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== 'undefined' ? window.innerWidth < breakpoint : false
+  );
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < breakpoint);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, [breakpoint]);
+  return isMobile;
+}
+
 export default function ChatWidget() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { isLoggedIn } = useProfileStore();
+  const { token, ensureGuest } = useProfileStore();
   const {
     isOpen, openChat, closeChat,
     messages, loading, sending, connected, unread, error,
@@ -16,13 +26,16 @@ export default function ChatWidget() {
   } = useChatStore();
 
   const [text, setText] = useState('');
+  const [preparing, setPreparing] = useState(false);
   const listRef = useRef(null);
   const inputRef = useRef(null);
+  const isMobile = useIsMobile();
 
-  // Auto-connect socket when user is logged in (to receive admin messages in background)
+  // Reconnect the socket whenever we have a token (real user or guest) so admin
+  // replies arrive in the background.
   useEffect(() => {
-    if (isLoggedIn) ensureSocket();
-  }, [isLoggedIn]);
+    if (token) ensureSocket();
+  }, [token]);
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -35,14 +48,16 @@ export default function ChatWidget() {
     if (isOpen) setTimeout(() => inputRef.current?.focus(), 100);
   }, [isOpen]);
 
-  const handleOpen = () => {
-    if (!isLoggedIn) {
-      navigate('/login');
-      return;
-    }
+  const handleOpen = async () => {
     // First user gesture — unlock audio context for future dings + ask permission
     unlockAudio();
     requestNotificationPermission();
+    // No account needed: silently spin up a guest session so anyone can chat.
+    if (!token) {
+      setPreparing(true);
+      await ensureGuest();
+      setPreparing(false);
+    }
     openChat();
   };
 
@@ -64,14 +79,14 @@ export default function ChatWidget() {
         aria-label={t('chat_support')}
         title={t('chat_support')}
       >
-        <span style={{ fontSize: 26 }}>{isOpen ? '✕' : '💬'}</span>
+        <span style={{ fontSize: 30 }}>{preparing ? '⏳' : isOpen ? '✕' : '💬'}</span>
         {!isOpen && unread > 0 && (
           <span style={styles.fabBadge}>{unread > 9 ? '9+' : unread}</span>
         )}
       </button>
 
       {isOpen && (
-        <div style={styles.window}>
+        <div style={{ ...styles.window, ...(isMobile ? styles.windowMobile : {}) }}>
           <div style={styles.header}>
             <div style={styles.headerLeft}>
               <div style={styles.avatar}>🍣</div>
@@ -166,15 +181,15 @@ export default function ChatWidget() {
 const styles = {
   fab: {
     position: 'fixed',
-    bottom: 'calc(var(--bottom-nav-height, 0px) + 20px)',
+    bottom: 'calc(var(--bottom-nav-height, 0px) + env(safe-area-inset-bottom, 0px) + 20px)',
     right: 20,
-    width: 56,
-    height: 56,
+    width: 64,
+    height: 64,
     borderRadius: '50%',
     background: 'var(--primary)',
     color: '#fff',
     border: 'none',
-    boxShadow: '0 6px 20px rgba(0,0,0,0.25)',
+    boxShadow: '0 8px 24px rgba(232,24,27,0.40)',
     cursor: 'pointer',
     zIndex: 200,
     display: 'flex',
@@ -202,23 +217,36 @@ const styles = {
   },
   window: {
     position: 'fixed',
-    bottom: 'calc(var(--bottom-nav-height, 0px) + 90px)',
+    bottom: 'calc(var(--bottom-nav-height, 0px) + env(safe-area-inset-bottom, 0px) + 96px)',
     right: 20,
-    width: 360,
+    width: 440,
     maxWidth: 'calc(100vw - 32px)',
-    height: 520,
-    maxHeight: 'calc(100vh - 140px)',
+    height: 640,
+    maxHeight: 'calc(100dvh - 160px)',
     background: '#fff',
-    borderRadius: 16,
-    boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+    borderRadius: 20,
+    boxShadow: '0 24px 70px rgba(0,0,0,0.30)',
     display: 'flex',
     flexDirection: 'column',
     overflow: 'hidden',
     zIndex: 199,
     border: '1px solid var(--divider)',
+    animation: 'fadeIn 0.22s ease-out',
+  },
+  // On phones the chat takes (almost) the whole screen for a premium, app-like feel.
+  windowMobile: {
+    bottom: 0,
+    right: 0,
+    left: 0,
+    top: 0,
+    width: '100%',
+    maxWidth: '100%',
+    height: '100dvh',
+    maxHeight: '100dvh',
+    borderRadius: 0,
   },
   header: {
-    padding: '12px 14px',
+    padding: '16px 18px',
     background: 'linear-gradient(135deg, var(--primary) 0%, #ff6b35 100%)',
     color: '#fff',
     display: 'flex',
@@ -245,8 +273,8 @@ const styles = {
     cursor: 'pointer', fontSize: 12, fontWeight: 700,
   },
   messages: {
-    flex: 1, overflowY: 'auto', padding: 14,
-    display: 'flex', flexDirection: 'column', gap: 8,
+    flex: 1, overflowY: 'auto', padding: 18,
+    display: 'flex', flexDirection: 'column', gap: 10,
     background: 'var(--background, #f7f7f7)',
   },
   loading: { textAlign: 'center', padding: 20, color: 'var(--text-secondary)' },
@@ -258,11 +286,11 @@ const styles = {
   emptySub: { fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 },
   bubbleRow: { display: 'flex' },
   bubble: {
-    maxWidth: '78%',
-    padding: '8px 12px',
-    borderRadius: 14,
-    fontSize: 14,
-    lineHeight: 1.4,
+    maxWidth: '80%',
+    padding: '10px 14px',
+    borderRadius: 16,
+    fontSize: 15,
+    lineHeight: 1.45,
     wordBreak: 'break-word',
   },
   bubbleMine: {
@@ -285,18 +313,19 @@ const styles = {
     fontSize: 12, padding: '6px 12px', textAlign: 'center',
   },
   inputBar: {
-    display: 'flex', alignItems: 'center', gap: 8,
-    padding: 10, borderTop: '1px solid var(--divider)', background: '#fff',
+    display: 'flex', alignItems: 'center', gap: 10,
+    padding: '12px 14px calc(12px + env(safe-area-inset-bottom, 0px))',
+    borderTop: '1px solid var(--divider)', background: '#fff',
   },
   input: {
     flex: 1, border: '1px solid var(--divider)', borderRadius: 999,
-    padding: '10px 14px', fontSize: 14, outline: 'none',
+    padding: '12px 16px', fontSize: 15, outline: 'none',
     color: 'var(--text-primary)', background: '#f7f7f7',
   },
   sendBtn: {
-    width: 40, height: 40, borderRadius: '50%',
+    width: 46, height: 46, borderRadius: '50%',
     background: 'var(--primary)', color: '#fff',
-    border: 'none', fontSize: 16,
+    border: 'none', fontSize: 18, flexShrink: 0,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
   },
 };
