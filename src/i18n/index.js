@@ -46,6 +46,9 @@ const en = {
   chat_support: 'Support Chat', chat_online: 'Online', chat_offline: 'Offline',
   chat_placeholder: 'Type a message...', chat_empty_title: 'How can we help?',
   chat_empty_sub: 'Send us a message and we will reply soon.', loading: 'Loading...',
+  delivery_location: 'Delivery location on map', use_my_location: 'My location', locating: 'Locating...',
+  tap_map_to_pick: 'Tap the map to mark your delivery point',
+  location_denied: 'Location access denied', location_unavailable: 'Geolocation not supported', map_load_error: 'Map failed to load',
 };
 
 const ru = {
@@ -92,6 +95,9 @@ const ru = {
   chat_support: 'Чат поддержки', chat_online: 'Онлайн', chat_offline: 'Не в сети',
   chat_placeholder: 'Напишите сообщение...', chat_empty_title: 'Чем можем помочь?',
   chat_empty_sub: 'Напишите нам и мы скоро ответим.', loading: 'Загрузка...',
+  delivery_location: 'Точка доставки на карте', use_my_location: 'Моё местоположение', locating: 'Определяем...',
+  tap_map_to_pick: 'Нажмите на карту, чтобы отметить точку доставки',
+  location_denied: 'Доступ к геолокации запрещён', location_unavailable: 'Геолокация не поддерживается', map_load_error: 'Не удалось загрузить карту',
 };
 
 const tr = {
@@ -138,6 +144,9 @@ const tr = {
   chat_support: 'Destek Sohbeti', chat_online: 'Çevrimiçi', chat_offline: 'Çevrimdışı',
   chat_placeholder: 'Mesaj yazın...', chat_empty_title: 'Nasıl yardımcı olabiliriz?',
   chat_empty_sub: 'Bize mesaj gönderin, en kısa sürede yanıtlayacağız.', loading: 'Yükleniyor...',
+  delivery_location: 'Haritada teslimat noktası', use_my_location: 'Konumum', locating: 'Konum bulunuyor...',
+  tap_map_to_pick: 'Teslimat noktasını işaretlemek için haritaya dokunun',
+  location_denied: 'Konum erişimi reddedildi', location_unavailable: 'Konum desteklenmiyor', map_load_error: 'Harita yüklenemedi',
 };
 
 const savedLang = localStorage.getItem('sushi_lang') || 'en';
